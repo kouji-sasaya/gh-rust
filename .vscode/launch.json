@@ -20,7 +20,9 @@
             "cwd": "${workspaceFolder}",
             "stopOnEntry": false,
             "console": "integratedTerminal",
-            "sourceLanguages": ["rust"]
+            "sourceLanguages": [
+                "rust"
+            ]
         },
         {
             "type": "lldb",
@@ -42,7 +44,9 @@
             "cwd": "${workspaceFolder}",
             "stopOnEntry": false,
             "console": "integratedTerminal",
-            "sourceLanguages": ["rust"]
+            "sourceLanguages": [
+                "rust"
+            ]
         }
     ]
 }
