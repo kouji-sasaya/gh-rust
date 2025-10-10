@@ -1,0 +1,48 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'gh-rust'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=gh-rust",
+                    "--package=gh-rust"
+                ],
+                "filter": {
+                    "name": "gh-rust",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false,
+            "console": "integratedTerminal",
+            "sourceLanguages": ["rust"]
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in gh-rust",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=gh-rust",
+                    "--package=gh-rust"
+                ],
+                "filter": {
+                    "name": "gh-rust",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false,
+            "console": "integratedTerminal",
+            "sourceLanguages": ["rust"]
+        }
+    ]
+}
