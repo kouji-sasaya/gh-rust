@@ -21,8 +21,14 @@ case "$PLATFORM-$ARCH" in
     linux-arm64) TARGET="aarch64-unknown-linux-gnu" ;;
     darwin-amd64) TARGET="x86_64-apple-darwin" ;;
     darwin-arm64) TARGET="aarch64-apple-darwin" ;;
+    windows-amd64) TARGET="x86_64-pc-windows-msvc" ;;
+    windows-arm64) TARGET="aarch64-pc-windows-msvc" ;;
     *) echo "Unsupported platform: $PLATFORM-$ARCH"; exit 1 ;;
 esac
+
+# Install the target if it's not already installed
+echo "Installing target: $TARGET"
+rustup target add "$TARGET"
 
 # Build the binary
 echo "Building for $PLATFORM-$ARCH (target: $TARGET)"
