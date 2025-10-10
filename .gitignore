@@ -2,8 +2,9 @@
 /target/
 Cargo.lock
 
-# Distribution
+# Distribution (but keep the main extension script)
 /dist/
+!/gh-rust
 
 # OS
 .DS_Store

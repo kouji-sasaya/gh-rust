@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -e
+
+# This is the main entry point for the gh-rust extension
+# It will download and execute the appropriate binary for the current platform
+
+# Detect platform and architecture
+case "$(uname -s)" in
+    Darwin*)    platform="darwin" ;;
+    Linux*)     platform="linux" ;;
+    CYGWIN*|MINGW*|MSYS*) platform="windows" ;;
+    *)          echo "Unsupported platform: $(uname -s)" >&2; exit 1 ;;
+esac
+
+case "$(uname -m)" in
+    x86_64|amd64)   arch="amd64" ;;
+    arm64|aarch64)  arch="arm64" ;;
+    *)              echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
+esac
+
+# Set binary name based on platform
+binary_name="gh-rust_${platform}_${arch}"
+if [ "$platform" = "windows" ]; then
+    binary_name="${binary_name}.exe"
+fi
+
+# Get the directory where this script is located
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Look for the binary in the same directory as this script
+binary_path="${script_dir}/${binary_name}"
+
+# If binary doesn't exist locally, try to find it in PATH or download it
+if [ ! -f "$binary_path" ]; then
+    # Try to find it in the extension directory structure
+    ext_dir="${script_dir}"
+    if [ -f "${ext_dir}/${binary_name}" ]; then
+        binary_path="${ext_dir}/${binary_name}"
+    else
+        echo "Error: Could not find binary '${binary_name}'" >&2
+        echo "Expected location: ${binary_path}" >&2
+        exit 1
+    fi
+fi
+
+# Make sure the binary is executable
+chmod +x "$binary_path"
+
+# Execute the binary with all passed arguments
+exec "$binary_path" "$@"
