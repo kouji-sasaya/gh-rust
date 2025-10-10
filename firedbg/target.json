@@ -1,0 +1,11 @@
+{
+  "binaries": [
+    {
+      "name": "gh-rust",
+      "src_path": "/home/ubuntu/work/gh-rust/src/main.rs"
+    }
+  ],
+  "examples": [],
+  "integration_tests": [],
+  "unit_tests": []
+}
