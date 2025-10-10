@@ -9,7 +9,7 @@ This is a simple Hello World GitHub CLI extension implemented in Rust.
 ## Installation
 
 ```bash
-gh extension install <your-username>/gh-rust
+gh extension install kouji-sasaya/gh-rust
 ```
 
 ## Usage
