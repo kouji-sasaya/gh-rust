@@ -6,7 +6,6 @@ set -e
 
 # Detect platform and architecture
 case "$(uname -s)" in
-    Darwin*)    platform="darwin" ;;
     Linux*)     platform="linux" ;;
     CYGWIN*|MINGW*|MSYS*) platform="windows" ;;
     *)          echo "Unsupported platform: $(uname -s)" >&2; exit 1 ;;
@@ -14,7 +13,6 @@ esac
 
 case "$(uname -m)" in
     x86_64|amd64)   arch="amd64" ;;
-    arm64|aarch64)  arch="arm64" ;;
     *)              echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
 esac
 

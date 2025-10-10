@@ -12,17 +12,13 @@ ARCH=$(uname -m)
 # Map architecture names
 case "$ARCH" in
     x86_64) ARCH="amd64" ;;
-    aarch64|arm64) ARCH="arm64" ;;
+    *) echo "Unsupported architecture: $ARCH"; exit 1 ;;
 esac
 
 # Set target for cross-compilation if needed
 case "$PLATFORM-$ARCH" in
     linux-amd64) TARGET="x86_64-unknown-linux-gnu" ;;
-    linux-arm64) TARGET="aarch64-unknown-linux-gnu" ;;
-    darwin-amd64) TARGET="x86_64-apple-darwin" ;;
-    darwin-arm64) TARGET="aarch64-apple-darwin" ;;
     windows-amd64) TARGET="x86_64-pc-windows-msvc" ;;
-    windows-arm64) TARGET="aarch64-pc-windows-msvc" ;;
     *) echo "Unsupported platform: $PLATFORM-$ARCH"; exit 1 ;;
 esac
 
