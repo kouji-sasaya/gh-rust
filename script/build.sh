@@ -32,11 +32,11 @@ cargo build --release --target "$TARGET"
 
 # Copy binary to dist directory with GitHub CLI extension naming convention
 BINARY_NAME="gh-rust"
-OUTPUT_NAME="gh-rust_${PLATFORM}_${ARCH}"
+OUTPUT_NAME="gh-rust-${PLATFORM}-${ARCH}"
 
 if [ "$PLATFORM" = "windows" ]; then
     BINARY_NAME="gh-rust.exe"
-    OUTPUT_NAME="gh-rust_${PLATFORM}_${ARCH}.exe"
+    OUTPUT_NAME="gh-rust-${PLATFORM}-${ARCH}.exe"
 fi
 
 cp "target/$TARGET/release/$BINARY_NAME" "dist/$OUTPUT_NAME"
