@@ -7,73 +7,10 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            platform: linux
-            arch: amd64
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            platform: windows
-            arch: amd64
-
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
-      
-      - name: Build binary
-        run: |
-          rustup target add ${{ matrix.target }}
-          cargo build --release --target ${{ matrix.target }}
-        env:
-          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
-      
-      - name: Prepare binary (Unix)
-        if: matrix.platform != 'windows'
-        run: |
-          mkdir -p dist
-          cp target/${{ matrix.target }}/release/gh-rust dist/gh-rust_${{ matrix.platform }}_${{ matrix.arch }}
-      
-      - name: Prepare binary (Windows)
-        if: matrix.platform == 'windows'
-        run: |
-          mkdir -p dist
-          cp target/${{ matrix.target }}/release/gh-rust.exe dist/gh-rust_${{ matrix.platform }}_${{ matrix.arch }}.exe
-      
-      - name: Upload binary artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: binary-${{ matrix.platform }}-${{ matrix.arch }}
-          path: dist/gh-rust_${{ matrix.platform }}_${{ matrix.arch }}*
-
   release:
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Download all binary artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-      
-      - name: Prepare release assets
-        run: |
-          mkdir -p release-assets
-          # Copy all binaries
-          find artifacts -name "gh-rust_*" -type f -exec cp {} release-assets/ \;
-          # Copy the main script
-          cp gh-rust release-assets/
-          chmod +x release-assets/gh-rust
-          ls -la release-assets/
       
       - name: Create Release
         env:
@@ -81,12 +18,20 @@ jobs:
         run: |
           gh release create ${{ github.ref_name }} \
             --title "Release ${{ github.ref_name }}" \
-            --notes "GitHub CLI extension release ${{ github.ref_name }} with cross-platform binary support.
+            --notes "GitHub CLI extension release ${{ github.ref_name }}.
+            
+            This extension compiles from source when executed, requiring Rust to be installed.
             
             ## Installation
             \`\`\`bash
             gh extension install kouji-sasaya/gh-rust
             \`\`\`
+            
+            ## Prerequisites
+            - Rust (latest stable version)
+            - Cargo
+            
+            Install Rust from: https://rustup.rs/
             
             ## Usage
             \`\`\`bash
@@ -94,6 +39,4 @@ jobs:
             \`\`\`
             
             ## Supported Platforms
-            - Linux (x86_64)
-            - Windows (x86_64)" \
-            release-assets/*
+            - Any platform where Rust can compile (Linux, macOS, Windows, etc.)"

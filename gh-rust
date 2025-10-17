@@ -2,47 +2,25 @@
 set -e
 
 # This is the main entry point for the gh-rust extension
-# It will download and execute the appropriate binary for the current platform
-
-# Detect platform and architecture
-case "$(uname -s)" in
-    Linux*)     platform="linux" ;;
-    CYGWIN*|MINGW*|MSYS*) platform="windows" ;;
-    *)          echo "Unsupported platform: $(uname -s)" >&2; exit 1 ;;
-esac
-
-case "$(uname -m)" in
-    x86_64|amd64)   arch="amd64" ;;
-    *)              echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
-esac
-
-# Set binary name based on platform
-binary_name="gh-rust_${platform}_${arch}"
-if [ "$platform" = "windows" ]; then
-    binary_name="${binary_name}.exe"
-fi
+# It will compile and execute the Rust binary on-demand
 
 # Get the directory where this script is located
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Look for the binary in the same directory as this script
-binary_path="${script_dir}/${binary_name}"
+# Change to the extension directory
+cd "$script_dir"
 
-# If binary doesn't exist locally, try to find it in PATH or download it
-if [ ! -f "$binary_path" ]; then
-    # Try to find it in the extension directory structure
-    ext_dir="${script_dir}"
-    if [ -f "${ext_dir}/${binary_name}" ]; then
-        binary_path="${ext_dir}/${binary_name}"
-    else
-        echo "Error: Could not find binary '${binary_name}'" >&2
-        echo "Expected location: ${binary_path}" >&2
-        exit 1
-    fi
+# Check if we have the source code
+if [ ! -f "Cargo.toml" ]; then
+    echo "Error: Cargo.toml not found. This extension requires Rust source code." >&2
+    exit 1
 fi
 
-# Make sure the binary is executable
-chmod +x "$binary_path"
+# Check if cargo is available
+if ! command -v cargo >/dev/null 2>&1; then
+    echo "Error: cargo (Rust) is not installed. Please install Rust from https://rustup.rs/" >&2
+    exit 1
+fi
 
-# Execute the binary with all passed arguments
-exec "$binary_path" "$@"
+# Build and run the Rust binary
+exec cargo run --release -- "$@"
