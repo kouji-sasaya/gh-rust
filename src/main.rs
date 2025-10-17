@@ -6,7 +6,7 @@ fn main() {
     println!("{}", extension_info);
 
     // デバッグのためのサンプル変数
-    let version = "2.4.0";
+    let version = "2.5.0";
     let author = "kouji-sasaya";
 
     println!("Version: {}", version);
