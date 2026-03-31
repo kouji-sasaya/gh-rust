@@ -1,48 +1,21 @@
-#!/usr/bin/env bash
+#!/bin/sh
 set -e
 
-# This is the main entry point for the gh-rust extension
-# It will download and execute the appropriate precompiled binary
 
-# Detect platform and architecture
-case "$(uname -s)" in
-    Linux*)     platform="linux" ;;
-    CYGWIN*|MINGW*|MSYS*|Windows_NT) platform="windows" ;;
-    *)          echo "Unsupported platform: $(uname -s)" >&2; exit 1 ;;
-esac
+# ex: ~/.local/share/gh/extensions/gh-rust/
+TOP=$(dirname "$0")
+MYNAKE=$(basename "$0")
 
-case "$(uname -m)" in
-    x86_64|amd64)   arch="amd64" ;;
-    *)              echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
-esac
-
-# Set binary name based on platform
-binary_name="gh-rust-${platform}-${arch}"
-if [ "$platform" = "windows" ]; then
-    binary_name="${binary_name}.exe"
+if [ "$1" = "build" ]; then
+  docker compose -f "${TOP}/docker-compose.yml" build
+  exit 0
 fi
 
-# Get the directory where this script is located
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Look for the binary in the same directory as this script
-binary_path="${script_dir}/${binary_name}"
-
-# Check if binary exists
-if [ ! -f "$binary_path" ]; then
-    echo "Error: Could not find binary '${binary_name}'" >&2
-    echo "Expected location: ${binary_path}" >&2
-    echo "" >&2
-    echo "Available files in extension directory:" >&2
-    ls -la "$script_dir" >&2
-    echo "" >&2
-    echo "This extension requires a precompiled binary for your platform." >&2
-    echo "Platform detected: ${platform}-${arch}" >&2
-    exit 1
+if [ "$1" = "shell" ]; then
+    shift
+    docker compose -f "${TOP}/docker-compose.yml" run \
+        --user $(id -u):$(id -g) \
+        -q --name ${MYNAKE} --rm ${MYNAKE} $@
+    exit 0
 fi
 
-# Make sure the binary is executable
-chmod +x "$binary_path"
-
-# Execute the binary with all passed arguments
-exec "$binary_path" "$@"
