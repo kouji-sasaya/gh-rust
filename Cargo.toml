@@ -1,6 +1,0 @@
-[package]
-name = "gh-rust"
-version = "2.7.0"
-edition = "2021"
-
-[dependencies]
