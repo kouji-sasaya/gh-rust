@@ -12,6 +12,7 @@ RUN apt-get update && \
     gh \
     rustc \
     cargo \
+    rustfmt \
     build-essential \
     pkg-config \
     libssl-dev \
