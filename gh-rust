@@ -4,6 +4,7 @@ set -e
 
 # ex: ~/.local/share/gh/extensions/gh-rust/
 TOP=$(dirname "$0")
+# My name is gh-rust
 MYNAKE=$(basename "$0")
 
 if [ "$1" = "build" ]; then
@@ -15,6 +16,7 @@ if [ "$1" = "shell" ]; then
     shift
     docker compose -f "${TOP}/docker-compose.yml" run \
         --user $(id -u):$(id -g) \
+        --volume .:/workdir \
         -q --name ${MYNAKE} --rm ${MYNAKE} $@
     exit 0
 fi
