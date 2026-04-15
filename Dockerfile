@@ -18,6 +18,8 @@ RUN apt-get update && \
     libssl-dev \
  && rm -rf /var/lib/apt/lists/*
 
+RUN cargo install --locked --root /usr/local cargo-audit --version 0.21.1
+
 WORKDIR /workdir
 
 COPY ./entrypoint.sh /entrypoint.sh
