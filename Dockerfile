@@ -10,6 +10,7 @@ RUN apt-get update && \
     curl \
     git \
     gh \
+    vim \
     rustc \
     cargo \
     rustfmt \
