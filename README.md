@@ -82,7 +82,7 @@ cargo run
 実行（非表示）
 
 ```sh
-cargo run
+cargo run -q
 ```
 
 ソースコードの成形
