@@ -3,6 +3,9 @@
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV RUSTUP_HOME=/usr/local/rustup
+ENV CARGO_HOME=/usr/local/cargo
+ENV PATH=/usr/local/cargo/bin:${PATH}
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -11,13 +14,15 @@ RUN apt-get update && \
     git \
     gh \
     vim \
-    rustc \
-    cargo \
-    rustfmt \
     build-essential \
     pkg-config \
     libssl-dev \
  && rm -rf /var/lib/apt/lists/*
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --default-toolchain stable && \
+    rustup update stable && \
+    rustup default stable && \
+    rustup component add rustfmt
 
 RUN cargo install --locked --root /usr/local cargo-audit --version 0.21.1
 
