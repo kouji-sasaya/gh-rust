@@ -40,12 +40,22 @@ gh rust setup
 
 フォーマッターを使って、rust コードを成形できます。
 
-### docker コンテナに入る
+### docker コンテナでシェルを使う
 
 ```sh
 mkdir my-rust && cd my-rust
 gh rust shell
 ```
+
+### VS Code で docker コンテナに接続する
+
+```sh
+mkdir my-rust && cd my-rust
+gh rust code
+```
+
+`gh rust code` はコンテナを起動して VS Code をコンテナ接続で開きます。
+`gh-rust` コンテナが存在しない場合は起動し、存在する場合はそのまま再利用します。
 
 ### Building
 
