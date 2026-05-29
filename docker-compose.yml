@@ -8,8 +8,12 @@ services:
     working_dir: /workdir
     volumes:
       - .:/workdir
+      - gh-rust-cargo:/workdir/.cargo
       - ~/.gitconfig:/home/$(id -un)/.gitconfig
     tty: true
     stdin_open: true
     environment:
       - CARGO_HOME=/workdir/.cargo
+
+volumes:
+  gh-rust-cargo:

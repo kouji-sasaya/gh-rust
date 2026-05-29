@@ -28,6 +28,7 @@ if [ "${COMMAND}" = "shell" ]; then
     --env CARGO_HOME=/workdir/.cargo \
     --user $(id -u):$(id -g) \
     --volume .:/workdir \
+    --volume gh-rust-cargo:/workdir/.cargo \
     -q --name "${MYNAKE}" \
     --rm "${MYNAKE}" "$@"
   exit 0
@@ -57,6 +58,7 @@ if [ "${COMMAND}" = "code" ]; then
       --env CARGO_HOME=${REQUIRED_CARGO_HOME} \
       --user "$(id -u):$(id -g)" \
       --volume "${PWD}:/workdir" \
+      --volume gh-rust-cargo:/workdir/.cargo \
       --name "${CONTAINER_NAME}" \
       --rm "${MYNAKE}" tail -f /dev/null >/dev/null
   fi
