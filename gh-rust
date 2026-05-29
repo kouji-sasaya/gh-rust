@@ -28,7 +28,6 @@ if [ "${COMMAND}" = "shell" ]; then
     --env CARGO_HOME=/workdir/.cargo \
     --user $(id -u):$(id -g) \
     --volume .:/workdir \
-    --volume gh-rust-cargo:/workdir/.cargo \
     -q --name "${MYNAKE}" \
     --rm "${MYNAKE}" "$@"
   exit 0
@@ -36,8 +35,6 @@ fi
 
 if [ "${COMMAND}" = "code" ]; then
   shift
-  CONTAINER_NAME="gh-rust"
-  REQUIRED_CARGO_HOME="/workdir/.cargo"
 
   cleanup() {
     docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
@@ -55,10 +52,8 @@ if [ "${COMMAND}" = "code" ]; then
   if ! docker ps -a --format '{{.Names}}' | grep -qx "${CONTAINER_NAME}"; then
     docker compose -f "${TOP}/docker-compose.yml" run \
       --detach \
-      --env CARGO_HOME=${REQUIRED_CARGO_HOME} \
       --user "$(id -u):$(id -g)" \
       --volume "${PWD}:/workdir" \
-      --volume gh-rust-cargo:/workdir/.cargo \
       --name "${CONTAINER_NAME}" \
       --rm "${MYNAKE}" tail -f /dev/null >/dev/null
   fi
