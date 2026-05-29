@@ -25,6 +25,7 @@ if [ "${COMMAND}" = "shell" ]; then
   # Run an interactive one-off container bound to the current directory.
   shift
   docker compose -f "${TOP}/docker-compose.yml" run \
+    --env CARGO_HOME=/workdir/.cargo \
     --user $(id -u):$(id -g) \
     --volume .:/workdir \
     -q --name "${MYNAKE}" \
@@ -35,6 +36,7 @@ fi
 if [ "${COMMAND}" = "code" ]; then
   shift
   CONTAINER_NAME="gh-rust"
+  REQUIRED_CARGO_HOME="/workdir/.cargo"
 
   cleanup() {
     docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
@@ -42,9 +44,17 @@ if [ "${COMMAND}" = "code" ]; then
 
   trap cleanup EXIT INT TERM
 
+  if docker ps -a --format '{{.Names}}' | grep -qx "${CONTAINER_NAME}"; then
+    CURRENT_CARGO_HOME=$(docker inspect "${CONTAINER_NAME}" --format '{{range .Config.Env}}{{println .}}{{end}}' | awk -F= '/^CARGO_HOME=/{print $2; exit}')
+    if [ "${CURRENT_CARGO_HOME}" != "${REQUIRED_CARGO_HOME}" ]; then
+      docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
+    fi
+  fi
+
   if ! docker ps -a --format '{{.Names}}' | grep -qx "${CONTAINER_NAME}"; then
     docker compose -f "${TOP}/docker-compose.yml" run \
       --detach \
+      --env CARGO_HOME=${REQUIRED_CARGO_HOME} \
       --user "$(id -u):$(id -g)" \
       --volume "${PWD}:/workdir" \
       --name "${CONTAINER_NAME}" \
