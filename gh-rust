@@ -6,6 +6,7 @@ MYNAKE=$(basename "$0")
 GH_COMMAND=$(basename "${0}" | tr '-' ' ')
 TOP=$(dirname "${0}")
 COMMAND="${1}"
+CONTAINER_NAME="${MYNAKE}"
 
 if [ $# -eq 0 ];then
   echo "Usage: ${GH_COMMAND} [command]"
@@ -41,10 +42,9 @@ if [ "${COMMAND}" = "code" ]; then
   }
 
   trap cleanup EXIT INT TERM
-
   if docker ps -a --format '{{.Names}}' | grep -qx "${CONTAINER_NAME}"; then
     CURRENT_CARGO_HOME=$(docker inspect "${CONTAINER_NAME}" --format '{{range .Config.Env}}{{println .}}{{end}}' | awk -F= '/^CARGO_HOME=/{print $2; exit}')
-    if [ "${CURRENT_CARGO_HOME}" != "${REQUIRED_CARGO_HOME}" ]; then
+    if [ "${CURRENT_CARGO_HOME}" != "/workdir/.cargo" ]; then
       docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
     fi
   fi
