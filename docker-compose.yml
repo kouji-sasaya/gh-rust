@@ -8,6 +8,5 @@ services:
     working_dir: /workdir
     volumes:
       - .:/workdir
-      - ~/.gitconfig:/home/$(id -un)/.gitconfig
     tty: true
     stdin_open: true

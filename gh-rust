@@ -25,10 +25,18 @@ fi
 if [ "${COMMAND}" = "shell" ]; then
   # Run an interactive one-off container bound to the current directory.
   shift
+  GITCONFIG_VOLUME_ARGS=""
+  if [ -f "${HOME}/.gitconfig" ]; then
+    GITCONFIG_VOLUME_ARGS="--volume ${HOME}/.gitconfig:/tmp/host_gitconfig:ro"
+  fi
   docker compose -f "${TOP}/docker-compose.yml" run \
     --env CARGO_HOME=/workdir/.cargo \
-    --user $(id -u):$(id -g) \
+    --env HOST_UID="$(id -u)" \
+    --env HOST_GID="$(id -g)" \
+    --env HOST_USER="$(id -un)" \
+    --env HOST_GROUP="$(id -gn)" \
     --volume .:/workdir \
+    ${GITCONFIG_VOLUME_ARGS} \
     -q --name "${MYNAKE}" \
     --rm "${MYNAKE}" "$@"
   exit 0
@@ -36,6 +44,10 @@ fi
 
 if [ "${COMMAND}" = "code" ]; then
   shift
+  GITCONFIG_VOLUME_ARGS=""
+  if [ -f "${HOME}/.gitconfig" ]; then
+    GITCONFIG_VOLUME_ARGS="--volume ${HOME}/.gitconfig:/workdir/.gitconfig:ro"
+  fi
 
   cleanup() {
     docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
@@ -43,8 +55,10 @@ if [ "${COMMAND}" = "code" ]; then
 
   trap cleanup EXIT INT TERM
   if docker ps -a --format '{{.Names}}' | grep -qx "${CONTAINER_NAME}"; then
+    EXPECTED_DOCKER_USER="$(id -u):$(id -g)"
+    CURRENT_DOCKER_USER=$(docker inspect "${CONTAINER_NAME}" --format '{{.Config.User}}')
     CURRENT_CARGO_HOME=$(docker inspect "${CONTAINER_NAME}" --format '{{range .Config.Env}}{{println .}}{{end}}' | awk -F= '/^CARGO_HOME=/{print $2; exit}')
-    if [ "${CURRENT_CARGO_HOME}" != "/workdir/.cargo" ]; then
+    if [ "${CURRENT_DOCKER_USER}" != "${EXPECTED_DOCKER_USER}" ] || [ "${CURRENT_CARGO_HOME}" != "/workdir/.cargo" ]; then
       docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
     fi
   fi
@@ -53,7 +67,14 @@ if [ "${COMMAND}" = "code" ]; then
     docker compose -f "${TOP}/docker-compose.yml" run \
       --detach \
       --user "$(id -u):$(id -g)" \
+      --env HOST_UID="$(id -u)" \
+      --env HOST_GID="$(id -g)" \
+      --env HOST_USER="$(id -un)" \
+      --env HOST_GROUP="$(id -gn)" \
+      --env HOME="/workdir" \
+      --env CARGO_HOME="/workdir/.cargo" \
       --volume "${PWD}:/workdir" \
+      ${GITCONFIG_VOLUME_ARGS} \
       --name "${CONTAINER_NAME}" \
       --rm "${MYNAKE}" tail -f /dev/null >/dev/null
   fi
