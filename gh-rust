@@ -46,7 +46,7 @@ if [ "${COMMAND}" = "code" ]; then
   shift
   GITCONFIG_VOLUME_ARGS=""
   if [ -f "${HOME}/.gitconfig" ]; then
-    GITCONFIG_VOLUME_ARGS="--volume ${HOME}/.gitconfig:/workdir/.gitconfig:ro"
+    GITCONFIG_VOLUME_ARGS="--volume ${HOME}/.gitconfig:/tmp/host_gitconfig:ro"
   fi
 
   cleanup() {
@@ -55,10 +55,10 @@ if [ "${COMMAND}" = "code" ]; then
 
   trap cleanup EXIT INT TERM
   if docker ps -a --format '{{.Names}}' | grep -qx "${CONTAINER_NAME}"; then
-    EXPECTED_DOCKER_USER="$(id -u):$(id -g)"
-    CURRENT_DOCKER_USER=$(docker inspect "${CONTAINER_NAME}" --format '{{.Config.User}}')
+    CURRENT_HOST_UID=$(docker inspect "${CONTAINER_NAME}" --format '{{range .Config.Env}}{{println .}}{{end}}' | awk -F= '/^HOST_UID=/{print $2; exit}')
+    CURRENT_HOST_GID=$(docker inspect "${CONTAINER_NAME}" --format '{{range .Config.Env}}{{println .}}{{end}}' | awk -F= '/^HOST_GID=/{print $2; exit}')
     CURRENT_CARGO_HOME=$(docker inspect "${CONTAINER_NAME}" --format '{{range .Config.Env}}{{println .}}{{end}}' | awk -F= '/^CARGO_HOME=/{print $2; exit}')
-    if [ "${CURRENT_DOCKER_USER}" != "${EXPECTED_DOCKER_USER}" ] || [ "${CURRENT_CARGO_HOME}" != "/workdir/.cargo" ]; then
+    if [ "${CURRENT_HOST_UID}" != "$(id -u)" ] || [ "${CURRENT_HOST_GID}" != "$(id -g)" ] || [ "${CURRENT_CARGO_HOME}" != "/workdir/.cargo" ]; then
       docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
     fi
   fi
@@ -66,7 +66,6 @@ if [ "${COMMAND}" = "code" ]; then
   if ! docker ps -a --format '{{.Names}}' | grep -qx "${CONTAINER_NAME}"; then
     docker compose -f "${TOP}/docker-compose.yml" run \
       --detach \
-      --user "$(id -u):$(id -g)" \
       --env HOST_UID="$(id -u)" \
       --env HOST_GID="$(id -g)" \
       --env HOST_USER="$(id -un)" \

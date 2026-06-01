@@ -25,38 +25,46 @@ run_cmd() {
     fi
 }
 
-if [ "$(id -u)" -eq 0 ] && [ -n "${HOST_UID:-}" ] && [ -n "${HOST_GID:-}" ]; then
-    GROUP_NAME=$(getent group "${HOST_GID}" | cut -d: -f1 || true)
-    if [ -z "${GROUP_NAME}" ]; then
-        GROUP_NAME=${HOST_GROUP:-hostgroup}
-        if getent group "${GROUP_NAME}" >/dev/null 2>&1; then
-            GROUP_NAME="hostgroup_${HOST_GID}"
+if [ "$(id -u)" -eq 0 ]; then
+    TARGET_USER=ferris
+    TARGET_GROUP=ferris
+
+    if [ -n "${HOST_GID:-}" ] && [ "$(id -g ${TARGET_USER})" != "${HOST_GID}" ]; then
+        EXISTING_GROUP=$(getent group "${HOST_GID}" | cut -d: -f1 || true)
+        if [ -n "${EXISTING_GROUP}" ]; then
+            TARGET_GROUP="${EXISTING_GROUP}"
+            usermod -g "${HOST_GID}" "${TARGET_USER}"
+        else
+            groupmod -g "${HOST_GID}" "${TARGET_GROUP}"
         fi
-        groupadd -g "${HOST_GID}" "${GROUP_NAME}"
     fi
 
-    USER_NAME=$(getent passwd "${HOST_UID}" | cut -d: -f1 || true)
-    if [ -z "${USER_NAME}" ]; then
-        USER_NAME=${HOST_USER:-hostuser}
-        if getent passwd "${USER_NAME}" >/dev/null 2>&1; then
-            USER_NAME="hostuser_${HOST_UID}"
+    if [ -n "${HOST_UID:-}" ] && [ "$(id -u ${TARGET_USER})" != "${HOST_UID}" ]; then
+        EXISTING_USER=$(getent passwd "${HOST_UID}" | cut -d: -f1 || true)
+        if [ -z "${EXISTING_USER}" ] || [ "${EXISTING_USER}" = "${TARGET_USER}" ]; then
+            usermod -u "${HOST_UID}" "${TARGET_USER}"
+        else
+            echo "Warning: uid ${HOST_UID} is already used by ${EXISTING_USER}. Keeping ferris uid unchanged." >&2
         fi
-        useradd -m -u "${HOST_UID}" -g "${GROUP_NAME}" -s /bin/bash "${USER_NAME}"
     fi
 
-    USER_HOME=$(getent passwd "${USER_NAME}" | cut -d: -f6)
+    USER_HOME=$(getent passwd "${TARGET_USER}" | cut -d: -f6)
     export HOME="${USER_HOME}"
+
+    if [ -n "${HOST_UID:-}" ] && [ -n "${HOST_GID:-}" ]; then
+        chown -R "${HOST_UID}:${HOST_GID}" "${USER_HOME}" /workdir 2>/dev/null || true
+    fi
 
     if [ -f /tmp/host_gitconfig ]; then
         mkdir -p "${USER_HOME}"
         cp /tmp/host_gitconfig "${USER_HOME}/.gitconfig"
-        chown "${HOST_UID}:${HOST_GID}" "${USER_HOME}/.gitconfig"
+        chown "$(id -u ${TARGET_USER}):$(id -g ${TARGET_USER})" "${USER_HOME}/.gitconfig"
     fi
 
     if [ $# -gt 0 ]; then
-        exec gosu "${USER_NAME}" "$@"
+        exec gosu "${TARGET_USER}" "$@"
     else
-        exec gosu "${USER_NAME}" bash -i
+        exec gosu "${TARGET_USER}" bash -i
     fi
 fi
 
