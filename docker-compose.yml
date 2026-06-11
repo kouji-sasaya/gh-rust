@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     working_dir: /workdir
     volumes:
-      - .:/workdir
+      - ${PWD}:/workdir
       - /tmp/.X11-unix:/tmp/.X11-unix:ro        
       - ~/.gitconfig:/home/ubuntu/.gitconfig
     tty: true
