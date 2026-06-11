@@ -23,6 +23,8 @@ sudo usermod  -u "${HOST_UID}" -g "${HOST_GID}" ubuntu
 
 sudo chown -R ubuntu:ubuntu /home/ubuntu
 
+export CARGO_HOME=/home/ubuntu/.cargo
+
 if [ $# -gt 0 ]; then
     exec gosu ubuntu "$@"
 else
