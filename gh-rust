@@ -16,6 +16,9 @@ if [ $# -eq 0 ];then
   exit
 fi
 
+export HOST_UID="$(id -u)"
+export HOST_GID="$(id -g)"
+
 if [ "${COMMAND}" = "setup" ]; then
   # Build/update the image used by shell/code commands.
   docker compose -f "${TOP}/docker-compose.yml" build
@@ -26,8 +29,8 @@ if [ "${COMMAND}" = "shell" ]; then
   # Run an interactive one-off container bound to the current directory.
   shift
   docker compose -f "${TOP}/docker-compose.yml" run \
-    --env HOST_UID="$(id -u)" \
-    --env HOST_GID="$(id -g)" \
+    --env HOST_UID="${HOST_UID}" \
+    --env HOST_GID="${HOST_GID}" \
     -q --name "${MYNAKE}" \
     --rm "${MYNAKE}" "$@"
   exit 0
@@ -42,8 +45,8 @@ if [ "${COMMAND}" = "code" ]; then
   trap cleanup EXIT INT TERM
   docker compose -f "${TOP}/docker-compose.yml" run \
     --detach \
-    --env HOST_UID="$(id -u)" \
-    --env HOST_GID="$(id -g)" \
+    --env HOST_UID="${HOST_UID}" \
+    --env HOST_GID="${HOST_GID}" \
     -q --name "${MYNAKE}" \
     --rm "${MYNAKE}" tail -f /dev/null >/dev/null
   fi

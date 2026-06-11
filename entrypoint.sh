@@ -1,6 +1,5 @@
 #!/bin/sh
 set -e
-set -e
 
 cd /workdir
 
@@ -18,13 +17,11 @@ echo " cargo run                    # Run your rust package"
 echo " cargo run -q                 # Run your rust package with secret"
 echo " cargo fmt                    # Fortmat your rust code"
 
-mkdir -p /etc/sudoers.d/
-echo "ubuntu ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ubuntu
 
-usermod  -u "${HOST_GID}" ubuntu
-groupmod -g "${HOST_GID}" ubuntu
+sudo groupmod -g "${HOST_GID}" ubuntu
+sudo usermod  -u "${HOST_UID}" -g "${HOST_GID}" ubuntu
 
-chown -R ubuntu:ubuntu /home/ubuntu
+sudo chown -R ubuntu:ubuntu /home/ubuntu
 
 if [ $# -gt 0 ]; then
     exec gosu ubuntu "$@"

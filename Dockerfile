@@ -28,6 +28,9 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no
 
 RUN cargo install --locked --root /usr/local cargo-audit --version 0.21.1
 
+RUN mkdir -p /etc/sudoers.d/
+RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ubuntu
+
 WORKDIR /workdir
 
 COPY ./entrypoint.sh /entrypoint.sh
