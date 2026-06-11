@@ -7,6 +7,12 @@ ENV RUSTUP_HOME=/usr/local/rustup
 ENV CARGO_HOME=/usr/local/cargo
 ENV PATH=/usr/local/cargo/bin:${PATH}
 
+# for rust GUI grafics
+#  xwayland
+# for miniquad (rust 2D framework)
+#  libxkbcommon-dev
+#  libxkbcommon-x11-0
+#  libxi-dev
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -21,6 +27,8 @@ RUN apt-get update && \
     pkg-config \
     libssl-dev \
     xwayland \
+    libxkbcommon-dev libxkbcommon-x11-0 \
+    libxi-dev \
  && rm -rf /var/lib/apt/lists/*
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --default-toolchain stable && \
