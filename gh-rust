@@ -49,7 +49,6 @@ if [ "${COMMAND}" = "code" ]; then
     --env HOST_GID="${HOST_GID}" \
     -q --name "${MYNAKE}" \
     --rm "${MYNAKE}" tail -f /dev/null >/dev/null
-  fi
 
   CONTAINER_HEX=$(printf '%s' "${CONTAINER_NAME}" | xxd -p | tr -d '\n')
   FOLDER_URI="vscode-remote://attached-container+${CONTAINER_HEX}/workdir/"

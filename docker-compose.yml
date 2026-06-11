@@ -5,6 +5,10 @@ services:
       context: .
       network: host
       dockerfile: Dockerfile
+      args:
+        http_proxy: ${http_proxy:-}
+        https_proxy: ${https_proxy:-}
+        no_proxy: ${no_proxy:-}
     working_dir: /workdir
     volumes:
       - ${PWD}:/workdir
@@ -16,3 +20,6 @@ services:
       - DISPLAY=$DISPLAY
       - LOCAL_UID=${HOST_UID}
       - LOCAL_GID=${HOST_GID}
+      - http_proxy=${http_proxy:-}
+      - https_proxy=${https_proxy:-}
+      - no_proxy=${no_proxy:-}
