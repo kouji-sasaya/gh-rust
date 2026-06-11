@@ -25,18 +25,9 @@ fi
 if [ "${COMMAND}" = "shell" ]; then
   # Run an interactive one-off container bound to the current directory.
   shift
-  GITCONFIG_VOLUME_ARGS=""
-  if [ -f "${HOME}/.gitconfig" ]; then
-    GITCONFIG_VOLUME_ARGS="--volume ${HOME}/.gitconfig:/tmp/host_gitconfig:ro"
-  fi
   docker compose -f "${TOP}/docker-compose.yml" run \
-    --env CARGO_HOME=/workdir/.cargo \
     --env HOST_UID="$(id -u)" \
     --env HOST_GID="$(id -g)" \
-    --env HOST_USER="$(id -un)" \
-    --env HOST_GROUP="$(id -gn)" \
-    --volume .:/workdir \
-    ${GITCONFIG_VOLUME_ARGS} \
     -q --name "${MYNAKE}" \
     --rm "${MYNAKE}" "$@"
   exit 0
@@ -44,42 +35,17 @@ fi
 
 if [ "${COMMAND}" = "code" ]; then
   shift
-  GITCONFIG_VOLUME_ARGS=""
-  if [ -f "${HOME}/.gitconfig" ]; then
-    GITCONFIG_VOLUME_ARGS="--volume ${HOME}/.gitconfig:/tmp/host_gitconfig:ro"
-  fi
-
   cleanup() {
     docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
   }
 
   trap cleanup EXIT INT TERM
-  if docker ps -a --format '{{.Names}}' | grep -qx "${CONTAINER_NAME}"; then
-    CURRENT_HOST_UID=$(docker inspect "${CONTAINER_NAME}" --format '{{range .Config.Env}}{{println .}}{{end}}' | awk -F= '/^HOST_UID=/{print $2; exit}')
-    CURRENT_HOST_GID=$(docker inspect "${CONTAINER_NAME}" --format '{{range .Config.Env}}{{println .}}{{end}}' | awk -F= '/^HOST_GID=/{print $2; exit}')
-    CURRENT_CARGO_HOME=$(docker inspect "${CONTAINER_NAME}" --format '{{range .Config.Env}}{{println .}}{{end}}' | awk -F= '/^CARGO_HOME=/{print $2; exit}')
-    if [ "${CURRENT_HOST_UID}" != "$(id -u)" ] || [ "${CURRENT_HOST_GID}" != "$(id -g)" ] || [ "${CURRENT_CARGO_HOME}" != "/workdir/.cargo" ]; then
-      docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
-    fi
-  fi
-
-  if ! docker ps -a --format '{{.Names}}' | grep -qx "${CONTAINER_NAME}"; then
-    docker compose -f "${TOP}/docker-compose.yml" run \
-      --detach \
-      --env HOST_UID="$(id -u)" \
-      --env HOST_GID="$(id -g)" \
-      --env HOST_USER="$(id -un)" \
-      --env HOST_GROUP="$(id -gn)" \
-      --env HOME="/workdir" \
-      --env CARGO_HOME="/workdir/.cargo" \
-      --volume "${PWD}:/workdir" \
-      ${GITCONFIG_VOLUME_ARGS} \
-      --name "${CONTAINER_NAME}" \
-      --rm "${MYNAKE}" tail -f /dev/null >/dev/null
-  fi
-
-  if ! docker ps --format '{{.Names}}' | grep -qx "${CONTAINER_NAME}"; then
-    docker start "${CONTAINER_NAME}" >/dev/null
+  docker compose -f "${TOP}/docker-compose.yml" run \
+    --detach \
+    --env HOST_UID="$(id -u)" \
+    --env HOST_GID="$(id -g)" \
+    -q --name "${MYNAKE}" \
+    --rm "${MYNAKE}" tail -f /dev/null >/dev/null
   fi
 
   CONTAINER_HEX=$(printf '%s' "${CONTAINER_NAME}" | xxd -p | tr -d '\n')

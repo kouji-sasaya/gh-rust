@@ -8,5 +8,11 @@ services:
     working_dir: /workdir
     volumes:
       - .:/workdir
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro        
+      - ~/.gitconfig:/home/ubuntu/.gitconfig
     tty: true
     stdin_open: true
+    environment:
+      - DISPLAY=$DISPLAY
+      - LOCAL_UID=${HOST_UID}
+      - LOCAL_GID=${HOST_GID}

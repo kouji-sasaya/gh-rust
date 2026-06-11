@@ -13,8 +13,9 @@ RUN apt-get update && \
     curl \
     git \
     gosu \
+    sudo \
     gh \
-    vim \
+    neovim \
     build-essential \
     pkg-config \
     libssl-dev \
@@ -27,12 +28,11 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no
 
 RUN cargo install --locked --root /usr/local cargo-audit --version 0.21.1
 
-RUN groupadd ferris && \
-    useradd -m -g ferris -s /bin/bash ferris
-
 WORKDIR /workdir
 
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["/bin/bash"]
