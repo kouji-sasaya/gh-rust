@@ -1,7 +1,17 @@
 #!/bin/sh
 set -e
 
-cd /workdir
+
+
+if [ "$(id -un)" = "root" ]; then
+  groupmod -g "${HOST_GID}" ubuntu
+  usermod  -u "${HOST_UID}" -g "${HOST_GID}" ubuntu
+  chown -R ubuntu:ubuntu /home/ubuntu
+  echo "exec su - ubuntu" >> ~/.bashrc
+  exec gosu ubuntu ${0}
+  exit 0
+fi
+
 
 echo "Usage:"
 echo " cargo --version              # Show cargo version"
@@ -17,16 +27,10 @@ echo " cargo run                    # Run your rust package"
 echo " cargo run -q                 # Run your rust package with secret"
 echo " cargo fmt                    # Fortmat your rust code"
 
-
-sudo groupmod -g "${HOST_GID}" ubuntu
-sudo usermod  -u "${HOST_UID}" -g "${HOST_GID}" ubuntu
-
-sudo chown -R ubuntu:ubuntu /home/ubuntu
-
 export CARGO_HOME=/home/ubuntu/.cargo
-
+cd /workdir
 if [ $# -gt 0 ]; then
-    exec gosu ubuntu "$@"
+    exec "$@"
 else
-    exec gosu ubuntu bash -i
+    exec bash -i
 fi
